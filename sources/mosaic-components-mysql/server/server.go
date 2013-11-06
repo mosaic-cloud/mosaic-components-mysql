@@ -12,7 +12,13 @@ import "syscall"
 import "vgl/transcript"
 
 
-type Server struct {
+type Server interface {
+	Initialize (_bootstrap bool) (error)
+	Terminate () (error)
+}
+
+
+type server struct {
 	configuration *ServerConfiguration
 	state serverState
 	isolates chan func () ()
@@ -33,9 +39,9 @@ const (
 const isolatesBufferSize = 16
 
 
-func Create (_configuration *ServerConfiguration) (*Server, error) {
+func Create (_configuration *ServerConfiguration) (Server, error) {
 	
-	_server := & Server {
+	_server := & server {
 		configuration : _configuration,
 		state : serverCreated,
 		isolates : make (chan func () (), isolatesBufferSize),
@@ -52,7 +58,7 @@ func Create (_configuration *ServerConfiguration) (*Server, error) {
 }
 
 
-func (_server *Server) Start (_bootstrap bool) (error) {
+func (_server *server) Initialize (_bootstrap bool) (error) {
 	_completion := make (chan error, 1)
 	defer close (_completion)
 	_server.isolates <- func () () {
@@ -72,7 +78,7 @@ func (_server *Server) Start (_bootstrap bool) (error) {
 }
 
 
-func (_server *Server) Terminate () (error) {
+func (_server *server) Terminate () (error) {
 	_completion := make (chan error, 1)
 	defer close (_completion)
 	_server.isolates <- func () () {
@@ -93,7 +99,7 @@ func (_server *Server) Terminate () (error) {
 }
 
 
-func (_server *Server) handleBootstrap () (error) {
+func (_server *server) handleBootstrap () (error) {
 	
 	if _server.state != serverCreated {
 		return fmt.Errorf ("illegal-state")
@@ -188,7 +194,7 @@ func (_server *Server) handleBootstrap () (error) {
 }
 
 
-func (_server *Server) handleStart () (error) {
+func (_server *server) handleStart () (error) {
 	
 	if _server.state != serverCreated {
 		return fmt.Errorf ("illegal-state")
@@ -229,7 +235,7 @@ func (_server *Server) handleStart () (error) {
 }
 
 
-func (_server *Server) handleStop () (error) {
+func (_server *server) handleStop () (error) {
 	
 	_server.transcript.TraceInformation ("stopping...")
 	
@@ -252,7 +258,7 @@ func (_server *Server) handleStop () (error) {
 }
 
 
-func (_server *Server) executeLoop () () {
+func (_server *server) executeLoop () () {
 	for {
 		_isolate, _ok := <- _server.isolates
 		if !_ok {
@@ -321,7 +327,7 @@ func prepareBootstrapScript (_configuration *ServerConfiguration) (*os.File, err
 }
 
 
-func (_server *Server) prepareConsole () (*os.File) {
+func (_server *server) prepareConsole () (*os.File) {
 	
 	var _reader, _writer *os.File
 	if _reader_1, _writer_1, _error := os.Pipe (); _error != nil {

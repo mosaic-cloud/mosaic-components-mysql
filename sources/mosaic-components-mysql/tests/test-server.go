@@ -10,7 +10,7 @@ import . "mosaic-components-mysql/server"
 func main () () {
 	
 	var _configuration *ServerConfiguration
-	var _server *Server
+	var _server Server
 	var _error error
 	
 	if _configuration, _error = ResolveDefaultServerConfiguration (); _error != nil {
@@ -21,11 +21,11 @@ func main () () {
 		panic (_error)
 	}
 	
-	if _error = _server.Start (true); _error != nil {
+	if _error = _server.Initialize (true); _error != nil {
 		panic (_error)
 	}
 	
-	time.Sleep (8 * time.Second)
+	time.Sleep (2 * time.Second)
 	
 	if _error = _server.Terminate (); _error != nil {
 		panic (_error)
