@@ -52,18 +52,17 @@ func execute (_channelEndpoint string) (error) {
 	}
 	
 	_transcript.TraceInformation ("creating the component channel...")
-	var _channel channels.Channel
 	if _channelEndpoint == "stdio" {
 		_transcript.TraceInformation ("  * using the stdio endpoint;")
 		_inboundStream := os.Stdin
 		_outboundStream := os.Stdout
-		if _channel, _error = channels.Create (_backendChannelCallbacks, _inboundStream, _outboundStream, nil); _error != nil {
+		if _, _error = channels.Create (_backendChannelCallbacks, _inboundStream, _outboundStream, nil); _error != nil {
 			panic (_error)
 		}
 	} else if strings.HasPrefix (_channelEndpoint, "tcp:") {
 		_channelTcpEndpoint := _channelEndpoint[4:]
 		_transcript.TraceInformation ("  * usig the TCP endpoint `%s`;", _channelTcpEndpoint)
-		if _channel, _error = channels.CreateAndDial (_backendChannelCallbacks, "tcp", _channelTcpEndpoint); _error != nil {
+		if _, _error = channels.CreateAndDial (_backendChannelCallbacks, "tcp", _channelTcpEndpoint); _error != nil {
 			panic (_error)
 		}
 	} else {
@@ -75,11 +74,6 @@ func execute (_channelEndpoint string) (error) {
 	
 	_transcript.TraceInformation ("waiting for the termination of the component backend...")
 	if _error := _backend.WaitTerminated (); _error != nil {
-		panic (_error)
-	}
-	
-	_transcript.TraceInformation ("terminating the component channel...")
-	if _error := _channel.Terminate (); _error != nil {
 		panic (_error)
 	}
 	
