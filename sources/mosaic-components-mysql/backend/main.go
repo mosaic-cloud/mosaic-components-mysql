@@ -5,11 +5,8 @@ package main
 
 import "fmt"
 import "net"
-import "os"
-import "strings"
 
 import "mosaic-components/libraries/backend"
-import "mosaic-components/libraries/channels"
 import "mosaic-components-mysql/server"
 import "vgl/transcript"
 
@@ -18,20 +15,12 @@ import . "mosaic-components/libraries/messages"
 
 func main () () {
 	
-	var _channelEndpoint string
-	if false {
-		_channelEndpoint = "stdio"
-	} else {
-		_channelEndpoint = "tcp:127.0.0.1:24704"
-	}
-	
-	if _error := execute (_channelEndpoint); _error != nil {
-		panic (_error)
-	}
+	backend.PreMain (Main)
+	panic ("fallthrough")
 }
 
 
-func execute (_channelEndpoint string) (error) {
+func Main (_componentIdentifier string, _channelEndpoint string) (error) {
 	
 	_callbacks := & callbacks {
 			server : nil,
@@ -39,46 +28,8 @@ func execute (_channelEndpoint string) (error) {
 			transcript : nil,
 	}
 	_callbacks.transcript = transcript.NewTranscript (_callbacks, packageTranscript)
-	_transcript := packageTranscript
-	var _error error
 	
-	_transcript.TraceInformation ("initializing...")
-	
-	_transcript.TraceInformation ("creating the component backend...")
-	var _backend backend.Backend
-	var _backendChannelCallbacks channels.Callbacks
-	if _backend, _backendChannelCallbacks, _error = backend.Create (_callbacks); _error != nil {
-		panic (_error)
-	}
-	
-	_transcript.TraceInformation ("creating the component channel...")
-	if _channelEndpoint == "stdio" {
-		_transcript.TraceInformation ("  * using the stdio endpoint;")
-		_inboundStream := os.Stdin
-		_outboundStream := os.Stdout
-		if _, _error = channels.Create (_backendChannelCallbacks, _inboundStream, _outboundStream, nil); _error != nil {
-			panic (_error)
-		}
-	} else if strings.HasPrefix (_channelEndpoint, "tcp:") {
-		_channelTcpEndpoint := _channelEndpoint[4:]
-		_transcript.TraceInformation ("  * usig the TCP endpoint `%s`;", _channelTcpEndpoint)
-		if _, _error = channels.CreateAndDial (_backendChannelCallbacks, "tcp", _channelTcpEndpoint); _error != nil {
-			panic (_error)
-		}
-	} else {
-		_transcript.TraceError ("invalid component channel endpoint; aborting!")
-		panic ("failed")
-	}
-	
-	_transcript.TraceInformation ("executing...")
-	
-	_transcript.TraceInformation ("waiting for the termination of the component backend...")
-	if _error := _backend.WaitTerminated (); _error != nil {
-		panic (_error)
-	}
-	
-	_transcript.TraceInformation ("terminated.")
-	return nil
+	return backend.Execute (_callbacks, _componentIdentifier, _channelEndpoint)
 }
 
 
