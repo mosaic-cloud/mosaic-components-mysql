@@ -7,7 +7,7 @@ import "net"
 
 
 const (
-	DefaultWorkspacePath = "/tmp/mysql-component"
+	DefaultWorkspacePath = "/tmp/mosaic-components-mysql"
 	DefaultDatabasesPath = DefaultWorkspacePath + "/databases"
 	DefaultTemporaryPath = DefaultWorkspacePath + "/temporary"
 	DefaultSocketPath = DefaultWorkspacePath + "/server.sock"

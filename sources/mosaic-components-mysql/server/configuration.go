@@ -4,6 +4,7 @@ package server
 
 
 import "net"
+import "os"
 
 
 type GenericConfiguration struct {
@@ -65,6 +66,15 @@ func ResolveDefaultGenericConfiguration () (*GenericConfiguration, error) {
 			ExecutablePath : DefaultExecutablePath,
 			PluginsPath : DefaultPluginsPath,
 			CharsetsPath : DefaultCharsetsPath,
+	}
+	
+	_workspace := os.Getenv ("mosaic_component_temporary")
+	if _workspace != "" {
+		_configuration.WorkspacePath = _workspace
+		_configuration.DatabasesPath = _workspace + "/databases"
+		_configuration.TemporaryPath = _workspace + "/temporary"
+		_configuration.SocketPath = _workspace + "/server.sock"
+		_configuration.PidPath = _workspace + "/server.pid"
 	}
 	
 	return _configuration, nil

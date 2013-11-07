@@ -109,6 +109,16 @@ func (_server *server) handleBootstrap () (error) {
 	
 	_markerPath := _server.configuration.GenericConfiguration.DatabasesPath + "/.bootstrapp.marker"
 	
+	if _error := os.MkdirAll (_server.configuration.GenericConfiguration.WorkspacePath, 0700); _error != nil {
+		return _error
+	}
+	if _error := os.MkdirAll (_server.configuration.GenericConfiguration.DatabasesPath, 0700); _error != nil {
+		return _error
+	}
+	if _error := os.MkdirAll (_server.configuration.GenericConfiguration.TemporaryPath, 0700); _error != nil {
+		return _error
+	}
+	
 	var _markerFile *os.File
 	defer func () () {
 		if _markerFile == nil {
@@ -122,7 +132,12 @@ func (_server *server) handleBootstrap () (error) {
 		}
 	} ()
 	if _markerFile_1, _error := os.OpenFile (_markerPath, os.O_WRONLY | os.O_CREATE | os.O_EXCL, 0444); _error != nil {
-		return _error
+		if os.IsExist (_error) {
+			_server.transcript.TraceWarning ("already bootstrapped.")
+			return nil
+		} else {
+			return _error
+		}
 	} else {
 		_markerFile = _markerFile_1
 	}

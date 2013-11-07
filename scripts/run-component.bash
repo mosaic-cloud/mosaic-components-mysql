@@ -1,6 +1,5 @@
 #!/dev/null
 
-set -x
 _identifier="${1:-000000006b1da14b35b70da1be305260915fda32}"
 _fqdn="${mosaic_node_fqdn:-mosaic-0.loopback.vnet}"
 _ip="${mosaic_node_ip:-127.0.155.0}"
