@@ -1,1 +1,1 @@
-mysqlb mosaic-components-mysql/backend/main.go
+component-backend mosaic-components-mysql/backend/main.go

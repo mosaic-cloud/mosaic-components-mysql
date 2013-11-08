@@ -22,11 +22,7 @@ func main () () {
 
 func Main (_componentIdentifier string, _channelEndpoint string) (error) {
 	
-	_callbacks := & callbacks {
-			server : nil,
-			backend : nil,
-			transcript : nil,
-	}
+	_callbacks := & callbacks {}
 	_callbacks.transcript = transcript.NewTranscript (_callbacks, packageTranscript)
 	
 	return backend.Execute (_callbacks, _componentIdentifier, _channelEndpoint)
@@ -37,7 +33,6 @@ type callbacks struct {
 	server server.Server
 	serverConfiguration *server.ServerConfiguration
 	backend backend.Controller
-	terminated chan error
 	transcript transcript.Transcript
 }
 
@@ -50,7 +45,7 @@ func (_callbacks *callbacks) Initialized (_backend backend.Controller) (error) {
 	_callbacks.transcript.TraceInformation ("acquiring the SQL endpoint...")
 	var _ip net.IP
 	var _port uint16
-	if _ip_1, _port_1, _fqdn, _error := backend.TcpSocketAcquireSync (_callbacks.backend, ResourceIdentifier ("tests")); _error != nil {
+	if _ip_1, _port_1, _fqdn, _error := backend.TcpSocketAcquireSync (_callbacks.backend, ResourceIdentifier ("sql")); _error != nil {
 		panic (_error)
 	} else {
 		_ip = _ip_1
@@ -78,7 +73,7 @@ func (_callbacks *callbacks) Initialized (_backend backend.Controller) (error) {
 	}
 	
 	_callbacks.transcript.TraceInformation ("registering the component...")
-	if _error := _callbacks.backend.ComponentRegisterSync (componentGroup); _error != nil {
+	if _error := _callbacks.backend.ComponentRegisterSync (selfGroup); _error != nil {
 		panic (_error)
 	}
 	
@@ -162,4 +157,4 @@ func (_callbacks *callbacks) ResourceAcquireFailed (_correlation Correlation, _e
 
 
 var packageTranscript = transcript.NewPackageTranscript ()
-var componentGroup = ComponentGroup ("be149e7b52c7cbe0695e208081ffaefbbc5778a7")
+var selfGroup = ComponentGroup ("be149e7b52c7cbe0695e208081ffaefbbc5778a7")

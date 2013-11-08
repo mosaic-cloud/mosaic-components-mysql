@@ -12,7 +12,7 @@ else
 	_tmp="/tmp/mosaic/components/${_identifier}"
 fi
 
-_run_bin="${_applications_elf}/mysqlb.elf"
+_run_bin="${_applications_elf}/component-backend.elf"
 _run_env=(
 		mosaic_component_identifier="${_identifier}"
 		mosaic_component_temporary="${_tmp}"
@@ -27,16 +27,18 @@ if test "${_identifier}" == 00000000adf010553c8b9b9a8b3f78547f6b54c5 ; then
 		exit 1
 	fi
 	_run_args=(
-			component-init
+			component-me2-init
 			"${@:2}"
 	)
 elif test "${_identifier}" != 000000006b1da14b35b70da1be305260915fda32 ; then
-	if ! test "${#}" -eq 1 ; then
+	if ! test "${#}" -ge 1 ; then
 		echo "[ee] invalid arguments; aborting!" >&2
 		exit 1
 	fi
 	_run_args=(
-			component "${_identifier}"
+			component
+			"${_identifier}"
+			"${@:2}"
 	)
 else
 	if ! test "${#}" -eq 0 ; then
