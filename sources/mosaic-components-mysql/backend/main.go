@@ -20,10 +20,11 @@ func main () () {
 }
 
 
-func Main (_componentIdentifier string, _channelEndpoint string) (error) {
+func Main (_componentIdentifier string, _channelEndpoint string, _configuration map[string]interface{}) (error) {
 	
 	_callbacks := & callbacks {}
 	_callbacks.transcript = transcript.NewTranscript (_callbacks, packageTranscript)
+	_callbacks.configuration = _configuration
 	
 	return backend.Execute (_callbacks, _componentIdentifier, _channelEndpoint)
 }
@@ -34,6 +35,7 @@ type callbacks struct {
 	serverConfiguration *server.ServerConfiguration
 	backend backend.Controller
 	transcript transcript.Transcript
+	configuration map[string]interface{}
 }
 
 
