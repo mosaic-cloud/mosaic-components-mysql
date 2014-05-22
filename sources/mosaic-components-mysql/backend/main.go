@@ -3,6 +3,7 @@
 package main
 
 
+import "errors"
 import "fmt"
 import "net"
 
@@ -13,21 +14,7 @@ import "vgl/transcript"
 import . "mosaic-components/libraries/messages"
 
 
-func main () () {
-	
-	backend.PreMain (Main)
-	panic ("fallthrough")
-}
-
-
-func Main (_componentIdentifier string, _channelEndpoint string, _configuration map[string]interface{}) (error) {
-	
-	_callbacks := & callbacks {}
-	_callbacks.transcript = transcript.NewTranscript (_callbacks, packageTranscript)
-	_callbacks.configuration = _configuration
-	
-	return backend.Execute (_callbacks, _componentIdentifier, _channelEndpoint)
-}
+var selfGroup = ComponentGroup ("be149e7b52c7cbe0695e208081ffaefbbc5778a7")
 
 
 type callbacks struct {
@@ -84,6 +71,7 @@ func (_callbacks *callbacks) Initialized (_backend backend.Controller) (error) {
 	return nil
 }
 
+
 func (_callbacks *callbacks) Terminated (_error error) (error) {
 	
 	_callbacks.transcript.TraceInformation ("terminating the component...")
@@ -97,30 +85,41 @@ func (_callbacks *callbacks) Terminated (_error error) (error) {
 	return nil
 }
 
+
 func (_callbacks *callbacks) ComponentCallInvoked (_operation ComponentOperation, _inputs interface{}, _correlation Correlation, _attachment Attachment) (error) {
 	
-	if _operation == "mosaic-mysql:get-sql-endpoint" {
-		_outputs := map[string]interface{} {
-				"ip" : _callbacks.serverConfiguration.SqlEndpointIp.String (),
-				"port" : _callbacks.serverConfiguration.SqlEndpointPort,
-				"administrator-login" : _callbacks.serverConfiguration.SqlAdministratorLogin,
-				"administrator-password" : _callbacks.serverConfiguration.SqlAdministratorPassword,
-				"url" : fmt.Sprintf (
-						"mysql://%s:%d/mysql?user=%s&password=%s",
-						_callbacks.serverConfiguration.SqlEndpointIp.String (),
-						_callbacks.serverConfiguration.SqlEndpointPort,
-						_callbacks.serverConfiguration.SqlAdministratorLogin,
-						_callbacks.serverConfiguration.SqlAdministratorPassword),
-		}
-		if _error := _callbacks.backend.ComponentCallSucceeded (_correlation, _outputs, nil); _error != nil {
-			panic (_error)
-		}
-		return nil
-	} else {
-		_callbacks.transcript.TraceError ("invoked invalid component call operation `%s`; ignoring!", _operation)
-		return nil
+	switch _operation {
+		
+		case "mosaic-mysql:get-sql-endpoint" :
+			
+			_outputs := map[string]interface{} {
+					"ip" : _callbacks.serverConfiguration.SqlEndpointIp.String (),
+					"port" : _callbacks.serverConfiguration.SqlEndpointPort,
+					"administrator-login" : _callbacks.serverConfiguration.SqlAdministratorLogin,
+					"administrator-password" : _callbacks.serverConfiguration.SqlAdministratorPassword,
+					"url" : fmt.Sprintf (
+							"mysql://%s:%d/mysql?user=%s&password=%s",
+							_callbacks.serverConfiguration.SqlEndpointIp.String (),
+							_callbacks.serverConfiguration.SqlEndpointPort,
+							_callbacks.serverConfiguration.SqlAdministratorLogin,
+							_callbacks.serverConfiguration.SqlAdministratorPassword),
+			}
+			
+			if _error := _callbacks.backend.ComponentCallSucceeded (_correlation, _outputs, nil); _error != nil {
+				panic (_error)
+			}
+			
+		default :
+			
+			_callbacks.transcript.TraceError ("invoked invalid component call operation `%s`; ignoring!", _operation)
+			if _error := _callbacks.backend.ComponentCallFailed (_correlation, errors.New ("invalid-operation"), nil); _error != nil {
+				panic (_error)
+			}
 	}
+	
+	return nil
 }
+
 
 func (_callbacks *callbacks) ComponentCastInvoked (_operation ComponentOperation, _inputs interface{}, _attachment Attachment) (error) {
 	_callbacks.transcript.TraceError ("invoked invalid component cast operation `%s`; ignoring!", _operation)
@@ -158,5 +157,18 @@ func (_callbacks *callbacks) ResourceAcquireFailed (_correlation Correlation, _e
 }
 
 
+func Main (_componentIdentifier string, _channelEndpoint string, _configuration map[string]interface{}) (error) {
+	
+	_callbacks := & callbacks {}
+	_callbacks.transcript = transcript.NewTranscript (_callbacks, packageTranscript)
+	_callbacks.configuration = _configuration
+	
+	return backend.Execute (_callbacks, _componentIdentifier, _channelEndpoint)
+}
+
+func main () () {
+	backend.PreMain (Main)
+}
+
+
 var packageTranscript = transcript.NewPackageTranscript ()
-var selfGroup = ComponentGroup ("be149e7b52c7cbe0695e208081ffaefbbc5778a7")
