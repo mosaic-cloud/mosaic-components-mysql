@@ -445,13 +445,13 @@ func prepareGenericExecution (_configuration *ServerConfiguration) (string, []st
 	
 	pushStrings (&_arguments, "--no-defaults")
 	
-	pushStringf (&_arguments, "--basedir=%s", _configuration.GenericConfiguration.PackageBasePath)
 	pushStringf (&_arguments, "--character-sets-dir=%s", _configuration.GenericConfiguration.CharsetsPath)
 	pushStringf (&_arguments, "--plugin-dir=%s", _configuration.GenericConfiguration.PluginsPath)
 	pushStringf (&_arguments, "--datadir=%s", _configuration.GenericConfiguration.DatabasesPath)
 	pushStringf (&_arguments, "--tmpdir=%s", _configuration.GenericConfiguration.TemporaryPath)
 	pushStringf (&_arguments, "--socket=%s", _configuration.GenericConfiguration.SocketPath)
 	pushStringf (&_arguments, "--pid-file=%s", _configuration.GenericConfiguration.PidPath)
+	pushStringf (&_arguments, "--basedir=%s", _configuration.GenericConfiguration.PackagePath)
 	
 	pushStrings (&_arguments, "--console")
 	pushStrings (&_arguments, "--log-warnings")

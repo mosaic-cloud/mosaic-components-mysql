@@ -15,10 +15,10 @@ type GenericConfiguration struct {
 	SocketPath string
 	PidPath string
 	
-	PackageBasePath string
 	ExecutablePath string
 	PluginsPath string
 	CharsetsPath string
+	PackagePath string
 }
 
 type ServerConfiguration struct {
@@ -43,11 +43,11 @@ func ResolveDefaultServerConfiguration () (*ServerConfiguration, error) {
 	}
 	
 	_configuration := & ServerConfiguration {
-			SqlEndpointIp : DefaultSqlEndpointIp,
-			SqlEndpointPort : DefaultSqlEndpointPort,
-			SqlAdministratorLogin : DefaultSqlAdministratorLogin,
-			SqlAdministratorPassword : DefaultSqlAdministratorPassword,
-			SqlInitializationScriptPaths : DefaultSqlInitializationScriptPaths,
+			SqlEndpointIp : ResolveDefaultSqlEndpointIp (),
+			SqlEndpointPort : ResolveDefaultSqlEndpointPort (),
+			SqlAdministratorLogin : ResolveDefaultSqlAdministratorLogin (),
+			SqlAdministratorPassword : ResolveDefaultSqlAdministratorPassword (),
+			SqlInitializationScriptPaths : ResolveDefaultSqlInitializationScriptPaths (),
 			GenericConfiguration : _genericConfiguration,
 	}
 	
@@ -57,15 +57,15 @@ func ResolveDefaultServerConfiguration () (*ServerConfiguration, error) {
 func ResolveDefaultGenericConfiguration () (*GenericConfiguration, error) {
 	
 	_configuration := & GenericConfiguration {
-			WorkspacePath : DefaultWorkspacePath,
-			DatabasesPath : DefaultDatabasesPath,
-			TemporaryPath : DefaultTemporaryPath,
-			SocketPath : DefaultSocketPath,
-			PidPath : DefaultPidPath,
-			PackageBasePath : DefaultPackageBasePath,
-			ExecutablePath : DefaultExecutablePath,
-			PluginsPath : DefaultPluginsPath,
-			CharsetsPath : DefaultCharsetsPath,
+			WorkspacePath : ResolveDefaultWorkspacePath (),
+			DatabasesPath : ResolveDefaultDatabasesPath (),
+			TemporaryPath : ResolveDefaultTemporaryPath (),
+			SocketPath : ResolveDefaultSocketPath (),
+			PidPath : ResolveDefaultPidPath (),
+			ExecutablePath : ResolveDefaultExecutablePath (),
+			PluginsPath : ResolveDefaultPluginsPath (),
+			CharsetsPath : ResolveDefaultCharsetsPath (),
+			PackagePath : ResolveDefaultPackageBasePath (),
 	}
 	
 	_workspace := os.Getenv ("mosaic_component_temporary")
