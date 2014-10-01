@@ -1,0 +1,4 @@
+
+{process_group_alias, 'mosaic-components:mysql', <<16#be149e7b52c7cbe0695e208081ffaefbbc5778a7 : 160>>}.
+{process_configurator, 'mosaic-components:mysql', term, {mosaic_component_process_configurators, configure_hardcoded, defaults}}.
+{process_configurator, 'mosaic-components:mysql', json, {mosaic_component_process_configurators, configure_hardcoded, defaults}}.
