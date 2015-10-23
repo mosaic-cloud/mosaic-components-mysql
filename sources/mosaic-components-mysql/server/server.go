@@ -422,7 +422,7 @@ func prepareBootstrapExecution (_configuration *ServerConfiguration) (string, []
 	pushStrings (&_arguments, "--bootstrap")
 	pushStrings (&_arguments, "--skip-grant")
 	pushStrings (&_arguments, "--skip-networking")
-	pushStrings (&_arguments, "--one-thread")
+	pushStrings (&_arguments, "--thread-handling=no-threads")
 	
 	return _executable, _arguments, _environment, _directory
 }
