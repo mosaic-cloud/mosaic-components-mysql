@@ -323,7 +323,7 @@ func prepareBootstrapScript (_configuration *ServerConfiguration) (*os.File, err
 	
 	_scriptContents := make ([][]byte, 0, 16)
 	
-	_scriptContents = append (_scriptContents, []byte ("CREATE DATABASE mysql;\n"))
+	_scriptContents = append (_scriptContents, []byte ("CREATE DATABASE mysql;"))
 	_scriptContents = append (_scriptContents, []byte ("USE mysql;"))
 	
 	for _, _scriptPath := range _configuration.SqlInitializationScriptPaths {
@@ -335,13 +335,19 @@ func prepareBootstrapScript (_configuration *ServerConfiguration) (*os.File, err
 		} else {
 			// FIXME: Enforce a "sane" file size!
 			_scriptSize := int (_scriptStat.Size ())
-			_scriptContent := make ([]byte, _scriptSize)
-			if _read, _error := io.ReadFull (_scriptFile, _scriptContent); _error != nil {
-				return nil, _error
-			} else if _read != _scriptSize {
-				return nil, fmt.Errorf ("script read unexpected data amount")
+			_scriptReader := bufio.NewReaderSize (_scriptFile, _scriptSize)
+			for {
+				if _scriptLine, _error := _scriptReader.ReadBytes ('\n'); _error == io.EOF {
+					break
+				} else if _error != nil {
+					return nil, _error
+				} else {
+					if _scriptLine[len (_scriptLine) - 1] == '\n' {
+						_scriptLine = _scriptLine[: len (_scriptLine) - 1]
+					}
+					_scriptContents = append (_scriptContents, _scriptLine)
+				}
 			}
-			_scriptContents = append (_scriptContents, _scriptContent)
 			if _error := _scriptFile.Close (); _error != nil {
 				panic (_error)
 			}
@@ -350,9 +356,9 @@ func prepareBootstrapScript (_configuration *ServerConfiguration) (*os.File, err
 	
 	_scriptContents = append (_scriptContents,
 			[]byte (fmt.Sprintf (
-						`INSERT INTO mysql.user VALUES ('%%','root','','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','','','','',0,0,0,0,'','');%s`, "\n")),
+						`INSERT INTO mysql.user VALUES ('%%','root','','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','Y','','','','',0,0,0,0,'','');`)),
 			[]byte (fmt.Sprintf (
-						`UPDATE mysql.user SET password = PASSWORD ('%s') WHERE user = 'root';%s`, _configuration.SqlAdministratorPassword, "\n")),
+						`UPDATE mysql.user SET password = PASSWORD ('%s') WHERE user = 'root';`, _configuration.SqlAdministratorPassword)),
 	)
 	
 	var _reader, _writer *os.File
@@ -367,6 +373,9 @@ func prepareBootstrapScript (_configuration *ServerConfiguration) (*os.File, err
 		for _, _scriptContent := range _scriptContents {
 			// packageTranscript.TraceDebugging ("pushing script chunk: `%s`...", _scriptContent)
 			if _, _error := _writer.Write (_scriptContent); _error != nil {
+				panic (_error)
+			}
+			if _, _error := _writer.Write ([]byte ("\n")); _error != nil {
 				panic (_error)
 			}
 		}
