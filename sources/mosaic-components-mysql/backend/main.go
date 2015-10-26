@@ -23,6 +23,7 @@ type callbacks struct {
 	backend backend.Controller
 	transcript transcript.Transcript
 	configuration map[string]interface{}
+	fqdn string
 }
 
 
@@ -34,11 +35,13 @@ func (_callbacks *callbacks) Initialized (_backend backend.Controller) (error) {
 	_callbacks.transcript.TraceInformation ("acquiring the SQL endpoint...")
 	var _ip net.IP
 	var _port uint16
-	if _ip_1, _port_1, _fqdn, _error := backend.TcpSocketAcquireSync (_callbacks.backend, ResourceIdentifier ("sql")); _error != nil {
+	var _fqdn string
+	if _ip_1, _port_1, _fqdn_1, _error := backend.TcpSocketAcquireSync (_callbacks.backend, ResourceIdentifier ("sql")); _error != nil {
 		panic (_error)
 	} else {
 		_ip = _ip_1
 		_port = _port_1
+		_fqdn = _fqdn_1
 		_callbacks.transcript.TraceInformation ("  * aquired `%s:%d` / `%s`.", _ip, _port, _fqdn)
 	}
 	
@@ -49,6 +52,7 @@ func (_callbacks *callbacks) Initialized (_backend backend.Controller) (error) {
 		_serverConfiguration.SqlEndpointIp = _ip
 		_serverConfiguration.SqlEndpointPort = _port
 		_callbacks.serverConfiguration = _serverConfiguration
+		_callbacks.fqdn = _fqdn
 	}
 	if _server, _error := server.Create (_callbacks.serverConfiguration); _error != nil {
 		panic (_error)
@@ -95,6 +99,7 @@ func (_callbacks *callbacks) ComponentCallInvoked (_operation ComponentOperation
 			_outputs := map[string]interface{} {
 					"ip" : _callbacks.serverConfiguration.SqlEndpointIp.String (),
 					"port" : _callbacks.serverConfiguration.SqlEndpointPort,
+					"fqdn" : _callbacks.fqdn,
 					"administrator-login" : _callbacks.serverConfiguration.SqlAdministratorLogin,
 					"administrator-password" : _callbacks.serverConfiguration.SqlAdministratorPassword,
 					"url" : fmt.Sprintf (
